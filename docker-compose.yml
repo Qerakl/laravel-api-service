@@ -1,0 +1,49 @@
+services:
+    db:
+        image: mysql:8.0
+        container_name: db
+        env_file: .env
+        environment:
+            - MYSQL_ROOT_PASSWORD=$DB_PASSWORD
+            - MYSQL_USER=$DB_USERNAME
+            - MYSQL_PASSWORD=$DB_PASSWORD
+            - MYSQL_DATABASE=$DB_DATABASE
+        networks:
+            - laravel
+    redis:
+        image: redis
+        container_name: redis
+        ports:
+            - "6379:6379"
+        restart: always
+
+    app:
+        container_name: app
+        build:
+            dockerfile: ./Dockerfile
+        volumes:
+            - ./:/var/www/html
+        networks:
+            - laravel
+        depends_on:
+            - db
+            - redis
+
+    nginx:
+        container_name: nginx
+        image: nginx:alpine
+        volumes:
+            - ./:/var/www/html
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        ports:
+            - "80:80"
+        networks:
+            - laravel
+
+
+networks:
+    laravel:
+        driver: bridge
+
+
+
